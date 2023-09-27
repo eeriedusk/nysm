@@ -492,9 +492,10 @@ SEC("kprobe/audit_log_end")
 int BPF_KPROBE(audit_log_end, struct audit_buffer *ab) {
     struct sk_buff                  *skb      = 0;
     struct enter_audit_log_end_data audit_msg = {};
-    void     *head   = 0;
+    void     *head   = 0,
+             *ptr    = 0;
     uint32_t skb_len = 0,
-             zero    = 0;
+             count   = 0;
 
     if (bpf_get_ns() != pidns) return 0;
 
@@ -506,7 +507,13 @@ int BPF_KPROBE(audit_log_end, struct audit_buffer *ab) {
 
     audit_msg.nlh.nlmsg_len = skb_len-sizeof(struct nlmsghdr);
 
-    bpf_map_update_elem(&map_audit_log_end_msg_data, &audit_msg, &zero, BPF_ANY);
+    ptr = bpf_map_lookup_elem(&map_audit_log_end_msg_data, &audit_msg);
+    if (ptr) {
+        bpf_probe_read(&count, sizeof(count), ptr);
+        count++;
+    }
+
+    bpf_map_update_elem(&map_audit_log_end_msg_data, &audit_msg, &count, BPF_ANY);
 
     return 0;
 }
@@ -526,9 +533,11 @@ int tracepoint_recvfrom_enter(struct enter_recvfrom_format *ctx) {
 SEC("tp/syscalls/sys_exit_recvfrom")
 int tracepoint_recvfrom_exit(void) {
     struct enter_audit_log_end_data audit_msg = {};
-    void     *ubuf;
-    uint32_t tgid = bpf_get_current_pid_tgid() >> 32,
-             zero = 0;
+    void     *ubuf = 0,
+             *ptr  = 0;
+    uint32_t tgid  = bpf_get_current_pid_tgid() >> 32,
+             count = 0,
+             zero  = 0;
 
     if (bpf_get_ns() == pidns) return 0;
 
@@ -538,7 +547,17 @@ int tracepoint_recvfrom_exit(void) {
     bpf_probe_read(&audit_msg.nlh    , sizeof(audit_msg.nlh)    , ubuf);
     bpf_probe_read(&audit_msg.message, sizeof(audit_msg.message), ubuf+offsetof(struct enter_audit_log_end_data, message));
 
-    if (!bpf_map_lookup_elem(&map_audit_log_end_msg_data, &audit_msg)) return 0;
+    ptr = bpf_map_lookup_elem(&map_audit_log_end_msg_data, &audit_msg);
+    if (!ptr) return 0;
+    bpf_probe_read(&count, sizeof(count), ptr);
+
+    if (count == 0) {
+        if (bpf_map_delete_elem(&map_audit_log_end_msg_data, &audit_msg)) return 0;
+    }
+    else {
+        count--;
+        bpf_map_update_elem(&map_audit_log_end_msg_data, &audit_msg, &count, BPF_ANY);
+    }
 
     bpf_probe_write_user(ubuf, &zero, sizeof(zero));
 
