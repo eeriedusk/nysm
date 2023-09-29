@@ -831,7 +831,7 @@ int tracepoint_recvmsg_exit(struct exit_format *ctx) {
         bpf_probe_read(&msghdr, sizeof(msghdr), iov_base+offset);
 
         if (msghdr.nlmsg_len == 0) {
-            if (change_me) {
+            if (change_me || new_msglen) {
                 bpf_probe_write_user(iov_base+change_me+offsetof(struct nlmsghdr, nlmsg_len), &new_msglen, sizeof(uint32_t));
             }
             return 0;
