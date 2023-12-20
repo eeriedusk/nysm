@@ -218,7 +218,7 @@ int main(int argc, char *argv[]) {
         }
         return execvp(argv[arguments.cmd], argv+arguments.cmd);
     }
-    if (arguments.verbose) {
+    if (arguments.verbose) {
         printf(COLOR_CYAN"[NYSM] "COLOR_RST"Forked PID %d for command.\n", f1);
     }
 
@@ -227,7 +227,7 @@ int main(int argc, char *argv[]) {
         start_daemon();
         return run_ebpf(pid, ppid);
     }
-    if (arguments.verbose) {
+    if (arguments.verbose) {
         printf(COLOR_CYAN"[NYSM] "COLOR_RST"Forked PID %d for eBPF.\n", f2);
     }
 
@@ -235,19 +235,19 @@ int main(int argc, char *argv[]) {
 
     if (arguments.rm) {
         remove(argv[0]);
-        if (arguments.verbose) {
+        if (arguments.verbose) {
             printf(COLOR_CYAN"[NYSM] "COLOR_RST"Removed nysm.\n");
         }
     }
 
     if (!arguments.detach) {
-        if (arguments.verbose) {
+        if (arguments.verbose) {
             printf(COLOR_CYAN"[NYSM] "COLOR_RST"Waiting for command to be done...\n");
         }
         wait(NULL);
     }
 
-    if (arguments.verbose) {
+    if (arguments.verbose) {
         printf(COLOR_CYAN"[NYSM] "COLOR_GREEN"Done!\n"COLOR_RST);
     }
 
