@@ -76,7 +76,7 @@ $(OUTPUT)/%.o: %.c $(wildcard %.h) | $(OUTPUT)
 # Build application binary
 $(APPS): %: $(OUTPUT)/%.o $(LIBBPF_OBJ) | $(OUTPUT)
 	$(call msg,BINARY,$@)
-	$(Q)$(CC) $(CFLAGS) $^ -l:libz.a -l:libelf.a --static -o bin/$@
+	$(Q)$(CC) $(CFLAGS) $^ -l:libz.a -l:libelf.a -l:libzstd.a --static -o bin/$@
 	$(Q)$(STRIP) bin/$@
 
 # Build helpers
