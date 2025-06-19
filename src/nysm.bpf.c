@@ -248,7 +248,7 @@ static int bpf_map_read_elem(void *dst, int size, void *map, int key) {
 static uint32_t get_next_non_listed_id(void *map, uint32_t id) {
 
     if (!bpf_map_lookup_elem(map, &id)) return 0;
-    for (int i=0;i<256;i++) {
+    for (int i=0;i<1024;i++) {
         id++;
         if (!bpf_map_lookup_elem(map, &id)) break;
     }
