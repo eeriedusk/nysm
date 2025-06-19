@@ -58,7 +58,7 @@ All these tools go blind to what goes through nysm. It hides:
 ### Requirements
 
 ```bash
-sudo apt install git make pkg-config libelf-dev clang llvm bpftool -y
+sudo apt install git make pkg-config libelf-dev libzstd-dev clang llvm bpftool -y
 ```
 
 ### Linux headers
